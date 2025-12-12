@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Strict Color Definitions based on provided designs (Indigo-500, Deep Purple) */
+  :root {
+    /* Main Accent Color (Indigo-500: #6366f1) */
+    --color-primary-rgb: 99 102 241; 
+    --color-primary: 236 72 153; /* Placeholder for shadcn-like primary, overridden below */
+    --color-primary-foreground: 255 255 255;
+
+    /* Secondary/Background Colors */
+    --color-secondary-rgb: 241 245 249; /* Slate-100 for light backgrounds */
+    --color-secondary-foreground: 17 24 39; /* Gray-900 */
+    --color-background: 255 255 255;
+    --color-foreground: 17 24 39;
+    --color-card: 255 255 255;
+    --color-border: 226 232 240; /* Slate-200 */
+    --color-muted-foreground: 100 116 139; /* Slate-500 */
+    --color-ring: 99 102 241; 
+
+    /* Custom variable for the deep purple accent in Dashboard/Login (Purple-700: #6d28d9) */
+    --color-purple-bg-rgb: 109 40 217; 
+  }
+  
+  /* Apply new colors to Next.js variables */
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --primary: var(--color-primary-rgb);
+  --primary-foreground: var(--color-primary-foreground);
+  --secondary: var(--color-secondary-rgb);
+  --secondary-foreground: var(--color-secondary-foreground);
+  --card: var(--color-card);
+  --border: var(--color-border);
+  --muted-foreground: var(--color-muted-foreground);
+  --ring: var(--color-ring);
+}
+
+/* Utility classes using the strict colors */
+.text-primary { color: rgb(var(--color-primary-rgb)); }
+.bg-primary { background-color: rgb(var(--color-primary-rgb)); }
+.hover\:bg-primary\/90:hover { background-color: rgba(var(--color-primary-rgb), 0.9); }
+
+.bg-purple-700-custom { background-color: rgb(var(--color-purple-bg-rgb)); }
+.text-purple-600 { color: rgb(124 58 237); } /* Tailwind purple-600 for contrast/accents */
+.text-green-600 { color: rgb(22 163 74); } /* Tailwind green-600 */
+.border-primary { border-color: rgb(var(--color-primary-rgb)); }
+.shadow-primary-lg { box-shadow: 0 10px 15px -3px rgba(var(--color-primary-rgb), 0.1), 0 4px 6px -2px rgba(var(--color-primary-rgb), 0.05); }

@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String         @id @default(cuid())
+  email             String         @unique
+  passwordHash      String?
+  name              String?
+  stripeCustomerId  String?        @unique
+  planStatus        String         @default("FREE")
+  creditsRemaining  Int            @default(10)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  hospitals         Hospital[]
+  subscription      Subscription?
+  navigationLogs    NavigationLog[]
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId String   @unique
+  stripePriceId        String
+  status               String
+  currentPeriodEnd     DateTime
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Hospital {
+  id            String   @id @default(cuid())
+  name          String
+  address       String?
+  createdByUser String
+  user          User     @relation(fields: [createdByUser], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  floors        Floor[]
+}
+
+model Floor {
+  id           String   @id @default(cuid())
+  hospitalId   String
+  hospital     Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  floorNumber  Int
+  mapImageUrl  String
+  graphData    Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  pois         POI[]
+}
+
+model POI {
+  id        String   @id @default(cuid())
+  floorId   String
+  floor     Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  name      String
+  type      String
+  nodeId    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NavigationLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  hospitalId    String
+  startNode     String
+  endNode       String
+  destination   String
+  pathTaken     Json
+  timestamp     DateTime @default(now())
+}
