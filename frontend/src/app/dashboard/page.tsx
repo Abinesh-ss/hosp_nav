@@ -1,120 +1,123 @@
-import { Plus, Users, Briefcase, DollarSign, Car, Settings, Map, History } from 'lucide-react';
+// app/dashboard/page.tsx
+import { Plus, Users, Briefcase, DollarSign, Car, Settings, Map, History, LucideIcon, Search, Bell } from 'lucide-react';
 import Link from 'next/link';
 
 const mockUser = { name: "Emma Kwan", role: "Admin" };
 const mockStats = [
-    { label: "Total Patients", value: "3,256", icon: Users, color: 'text-purple-600' },
-    { label: "Available Staff", value: "394", icon: Briefcase, color: 'text-blue-500' },
-    { label: "Avg. Treat. Costs", value: "$2,536", icon: DollarSign, color: 'text-orange-500' },
-    { label: "Available Cars", value: "38", icon: Car, color: 'text-red-500' },
+  { label: "Total Patients", value: "3,256", icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
+  { label: "Available Staff", value: "394", icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
+  { label: "Avg. Treat. Costs", value: "$2,536", icon: DollarSign, color: 'text-orange-600', bg: 'bg-orange-50' },
+  { label: "Available Cars", value: "38", icon: Car, color: 'text-red-600', bg: 'bg-red-50' },
 ];
 
-const SidebarItem = ({ icon: Icon, label, href, active }) => (
-    <Link href={href} className={`flex items-center p-3 rounded-lg transition-colors ${active ? 'bg-indigo-50 text-primary font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}>
-        <Icon className="h-5 w-5 mr-3" />
-        {label}
-    </Link>
+interface SidebarItemProps {
+  icon: LucideIcon;
+  label: string;
+  href: string;
+  active: boolean;
+}
+
+const SidebarItem = ({ icon: Icon, label, href, active }: SidebarItemProps) => (
+  <Link href={href} className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100 font-semibold' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600'}`}>
+    <Icon className={`h-5 w-5 mr-3 ${active ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600'}`} />
+    {label}
+  </Link>
 );
 
 export default function DashboardPage() {
-    const user = mockUser;
+  return (
+    // Full width section (no content-wrap) so sidebar can be flush left
+    <section className="min-h-[calc(100vh-100px)] bg-[#f8fafc] page-transition">
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-72 p-8 bg-white border-r border-slate-100 hidden lg:block">
+          <button className="flex items-center justify-center w-full bg-indigo-600 text-white p-4 rounded-2xl mb-10 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95">
+            <Plus className="h-5 w-5 mr-2" /> Register patient
+          </button>
 
-    return (
-        <section className="flex min-h-[calc(100vh-64px)] bg-gray-50">
-            
-            {/* Sidebar (Left Panel) - Fixed width w-64 and p-6 padding */}
-            <div className="w-64 p-6 bg-white border-r min-h-[calc(100vh-64px)] flex flex-col">
-                <div className="text-2xl font-bold text-primary mb-10">HOSPI<span className="text-purple-600">NAV</span></div>
-                
-                <button className="flex items-center justify-center w-full bg-primary text-white p-3 rounded-xl mb-8 hover:bg-primary/90 transition-colors shadow-primary-lg">
-                    <Plus className="h-5 w-5 mr-2" /> Register patient
-                </button>
+          <nav className="space-y-2">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-3">Menu</p>
+            <SidebarItem icon={Users} label="Patients" href="/dashboard" active={false} />
+            <SidebarItem icon={Map} label="Overview" href="/dashboard" active={true} />
+            <SidebarItem icon={Map} label="Map Builder" href="/editor" active={false} />
+            <SidebarItem icon={History} label="History" href="/dashboard" active={false} />
+          </nav>
 
-                <nav className="space-y-1">
-                    <SidebarItem icon={Users} label="Patients" href="/dashboard" active={false} />
-                    <SidebarItem icon={Map} label="Overview" href="/dashboard" active={true} />
-                    <SidebarItem icon={Map} label="Map" href="/dashboard" active={false} />
-                    <SidebarItem icon={Map} label="Departments" href="/dashboard" active={false} />
-                    <SidebarItem icon={Map} label="Doctors" href="/dashboard" active={false} />
-                    <SidebarItem icon={History} label="History" href="/dashboard" active={false} />
-                </nav>
-                
-                <div className="mt-auto pt-6 border-t border-gray-100"> {/* Push settings and mobile app to the bottom */}
-                    <SidebarItem icon={Settings} label="Settings" href="/dashboard" active={false} />
-                     {/* Mobile App CTA */}
-                    <div className="p-4 mt-6 rounded-xl bg-purple-700-custom text-white">
-                        <p className="text-sm font-semibold mb-2">Get mobile app</p>
-                        <div className="flex gap-2 text-xs">
-                            <span className="opacity-80">Android</span>
-                            <span className="opacity-80">Apple</span>
-                        </div>
-                    </div>
-                </div>
+          <div className="mt-12 pt-8 border-t border-slate-50">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-3">Account</p>
+            <SidebarItem icon={Settings} label="Settings" href="/dashboard" active={false} />
+          </div>
+        </aside>
+
+        {/* Content area */}
+        <main className="flex-1 p-6 lg:p-10 overflow-y-auto">
+          <header className="flex justify-between items-center mb-8">
+            <div className="relative w-full max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search records..."
+                className="w-full pl-12 pr-6 py-3 bg-white border border-slate-100 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all shadow-sm"
+              />
             </div>
 
-            {/* Main Content Area - Correct p-8 padding and overflow-y-auto */}
-            <div className="flex-1 p-8 overflow-y-auto">
-                {/* Header/Search Bar */}
-                <header className="flex justify-between items-center mb-8">
-                    <div className="relative">
-                        <input 
-                            type="text" 
-                            placeholder="Search..." 
-                            className="w-96 pl-10 pr-4 py-2 border rounded-full focus:border-primary focus:ring-1 focus:ring-primary/50" 
-                        />
-                        <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <div className="text-sm font-medium text-gray-700">Hi, {user.name}</div>
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-white">E</div>
-                    </div>
-                </header>
-
-                {/* Metric Cards - grid gap-6 for proper card spacing */}
-                <div className="grid gap-6 md:grid-cols-4 mb-8">
-                    {mockStats.map(stat => (
-                        <div key={stat.label} className="rounded-xl bg-white p-6 shadow-md border">
-                            <div className={`text-4xl font-extrabold ${stat.color}`}>{stat.value}</div>
-                            <h3 className="text-sm font-medium text-gray-500 mt-1">{stat.label}</h3>
-                        </div>
-                    ))}
+            <div className="flex items-center space-x-6">
+              <button className="relative p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                <Bell className="h-6 w-6" />
+                <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
+              </button>
+              <div className="flex items-center space-x-3 pl-6 border-l border-slate-100">
+                <div className="text-right">
+                  <div className="text-sm font-bold text-slate-900">{mockUser.name}</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">{mockUser.role}</div>
                 </div>
-
-                {/* Charts and Data Grids - grid gap-6 for vertical and horizontal spacing */}
-                <div className="grid gap-6 lg:grid-cols-3">
-                    {/* Main Chart: Outpatients vs. Inpatients Trend */}
-                    <div className="lg:col-span-2 rounded-xl bg-white p-6 shadow-md border h-96 flex flex-col">
-                        <div className="flex justify-between items-center mb-4 border-b pb-2">
-                             <h3 className="text-lg font-semibold">Outpatients vs. Inpatients Trend</h3>
-                             <p className="text-sm text-muted-foreground">Show by months</p>
-                        </div>
-                        <div className="flex-grow flex items-center justify-center">
-                             <p className="text-muted-foreground">Chart Placeholder</p>
-                        </div>
-                    </div>
-
-                    {/* Right Panel: Patients by Gender & Division */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <div className="rounded-xl bg-white p-6 shadow-md border h-48 flex items-center justify-center">
-                             <p className="text-muted-foreground">Patients by Gender Chart Placeholder</p>
-                        </div>
-                        <div className="rounded-xl bg-white p-6 shadow-md border h-48 flex items-center justify-center">
-                            <p className="text-muted-foreground">Time Admitted Chart Placeholder</p>
-                        </div>
-                    </div>
-                    
-                    {/* Bottom Panel: Division & Patient Count */}
-                     <div className="lg:col-span-2 rounded-xl bg-white p-6 shadow-md border h-72 flex items-center justify-center">
-                        <p className="text-muted-foreground">Patients By Division Placeholder</p>
-                    </div>
-                    
-                    {/* Bottom Right: Purple Card */}
-                    <div className="lg:col-span-1 rounded-xl p-6 shadow-md h-72 flex flex-col items-center justify-center text-white bg-purple-700-custom">
-                        <p className="font-bold text-3xl mb-1">3,240</p>
-                        <p className="text-lg">Patients this month</p>
-                    </div>
-                </div>
+                <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">E</div>
+              </div>
             </div>
-        </section>
-    );
+          </header>
+
+          {/* Metric Cards */}
+          <div className="grid gap-6 md:grid-cols-4 mb-8">
+            {mockStats.map(stat => (
+              <div key={stat.label} className="group rounded-3xl bg-white p-6 shadow-sm border border-slate-50 hover:shadow-xl hover:border-indigo-100 transition-all duration-300">
+                <div className={`h-12 w-12 rounded-2xl ${stat.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                </div>
+                <div className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</div>
+                <h3 className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">{stat.label}</h3>
+              </div>
+            ))}
+          </div>
+
+          {/* Charts + Status */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 rounded-3xl bg-white p-6 shadow-sm border border-slate-50 h-96 flex flex-col items-center justify-center border-dashed">
+              <div className="h-20 w-20 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
+                <Map className="h-8 w-8 text-indigo-200" />
+              </div>
+              <p className="text-slate-400 font-medium">Activity analytics will appear here</p>
+            </div>
+
+            <div className="rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-700 p-6 text-white shadow-xl flex flex-col justify-between">
+              <div>
+                <h4 className="text-xl font-bold mb-2">Hospital Map Status</h4>
+                <p className="text-indigo-100 text-sm opacity-80 font-medium leading-relaxed">Your floor plans are currently being processed for navigation paths.</p>
+              </div>
+              <div className="mt-6">
+                <div className="flex justify-between text-xs font-bold mb-2 uppercase tracking-widest">
+                  <span>Optimization</span>
+                  <span>84%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div className="bg-white h-2 rounded-full w-[84%]"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </section>
+  );
 }
+
