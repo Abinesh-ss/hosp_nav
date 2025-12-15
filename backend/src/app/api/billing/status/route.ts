@@ -1,13 +1,13 @@
-import { Router } from "express";
-import { prisma } from "../db/client";
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import { auth } from "@/lib/auth";
 
-const router = Router();
+export async function GET(req: NextRequest) {
+  const userId = await auth(req);
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-router.get("/status", async (req, res) => {
-  const hospitalId = req.user?.hospitalId;
-
-  const hospital = await prisma.hospital.findUnique({
-    where: { id: hospitalId },
+  const hospital = await prisma.hospital.findFirst({
+    where: { createdByUser: userId },
     select: {
       region: true,
       subscriptionStatus: true,
@@ -16,7 +16,5 @@ router.get("/status", async (req, res) => {
     },
   });
 
-  res.json(hospital);
-});
-
-export default router;
+  return NextResponse.json(hospital);
+}
