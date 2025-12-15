@@ -1,9 +1,10 @@
+import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { prisma } from "../../db/client";
+import prisma from "@/lib/db";
 
-export async function POST(req, res) {
-  const signature = req.headers["x-razorpay-signature"];
-  const body = JSON.stringify(req.body);
+export async function POST(req: NextRequest) {
+  const body = await req.text();
+  const signature = req.headers.get("x-razorpay-signature")!;
 
   const expected = crypto
     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!)
@@ -11,11 +12,13 @@ export async function POST(req, res) {
     .digest("hex");
 
   if (signature !== expected) {
-    return res.status(400).send("Invalid signature");
+    return new NextResponse("Invalid signature", { status: 400 });
   }
 
-  if (req.body.event === "payment.captured") {
-    const hospitalId = req.body.payload.payment.entity.notes.hospitalId;
+  const event = JSON.parse(body);
+
+  if (event.event === "payment.captured") {
+    const hospitalId = event.payload.payment.entity.notes.hospitalId;
 
     await prisma.hospital.update({
       where: { id: hospitalId },
@@ -27,5 +30,5 @@ export async function POST(req, res) {
     });
   }
 
-  res.json({ success: true });
+  return NextResponse.json({ success: true });
 }
