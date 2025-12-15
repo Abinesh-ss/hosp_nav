@@ -1,19 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { assignHospitalSubscription } from "@/services/subscription.service";
+import { z } from "zod";
 
-// POST /api/hospital/register
+// 1️⃣ Define schema
+const hospitalSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  address: z.string().min(5, "Address must be at least 5 characters"),
+  country: z.string().min(2, "Country is required"),
+  state: z.string().optional(),
+});
+
 export async function POST(req: NextRequest) {
   try {
-    const { name, address, country, state } = await req.json();
+    const json = await req.json();
 
-    // TODO: Replace this with your real auth/session logic
-    const userId = "some-user-id"; 
+    // 2️⃣ Validate request body
+    const parsed = hospitalSchema.safeParse(json);
+    if (!parsed.success) {
+      const errors = parsed.error.errors.map((e) => e.message);
+      return NextResponse.json({ error: errors.join(", ") }, { status: 400 });
+    }
+
+    const { name, address, country, state } = parsed.data;
+
+    // 3️⃣ Get userId from auth/session (replace with your logic)
+    const userId = "some-user-id";
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 1️⃣ Create hospital with temporary placeholders
+    // 4️⃣ Create hospital with placeholder subscription
     const hospital = await prisma.hospital.create({
       data: {
         name,
@@ -21,15 +38,15 @@ export async function POST(req: NextRequest) {
         country,
         state,
         createdByUser: userId,
-        region: "INTERNATIONAL",      // placeholder
-        subscriptionStatus: "TRIAL",  // placeholder
+        region: "INTERNATIONAL",
+        subscriptionStatus: "TRIAL",
       },
     });
 
-    // 2️⃣ Run subscription hook
+    // 5️⃣ Assign subscription
     await assignHospitalSubscription(hospital.id, country, state);
 
-    // 3️⃣ Return hospital
+    // 6️⃣ Return hospital
     return NextResponse.json(hospital, { status: 201 });
   } catch (error: any) {
     console.error("Error registering hospital:", error);
