@@ -1,16 +1,19 @@
-import { prisma } from "../db/client";
+import prisma from "@/lib/db";
+
+export type Region = "TAMIL_NADU" | "INDIA_OTHER" | "INTERNATIONAL";
 
 export async function assignHospitalSubscription(
   hospitalId: string,
   country: string,
   state?: string
 ) {
-  let region: "TAMIL_NADU" | "INDIA_OTHER" | "INTERNATIONAL" = "INTERNATIONAL";
-
-  if (country === "India") {
-    region = state === "Tamil Nadu" ? "TAMIL_NADU" : "INDIA_OTHER";
+  // 1️⃣ Determine region
+  let region: Region = "INTERNATIONAL";
+  if (country.toLowerCase() === "india") {
+    region = state?.toLowerCase() === "tamil nadu" ? "TAMIL_NADU" : "INDIA_OTHER";
   }
 
+  // 2️⃣ Tamil Nadu hospitals → FREE
   if (region === "TAMIL_NADU") {
     return prisma.hospital.update({
       where: { id: hospitalId },
@@ -25,8 +28,9 @@ export async function assignHospitalSubscription(
     });
   }
 
+  // 3️⃣ Other hospitals → TRIAL for 30 days
   const trialEndsAt = new Date();
-  trialEndsAt.setDate(trialEndsAt.getDate() + 21);
+  trialEndsAt.setDate(trialEndsAt.getDate() + 30); // 30-day trial
 
   return prisma.hospital.update({
     where: { id: hospitalId },
@@ -36,14 +40,16 @@ export async function assignHospitalSubscription(
       region,
       subscriptionStatus: "TRIAL",
       trialEndsAt,
+      paymentProvider: "RAZORPAY", // default payment provider
     },
   });
 }
 
+// 4️⃣ Helper to check if subscription is valid
 export function isHospitalSubscriptionValid(hospital: {
   subscriptionStatus: string;
   trialEndsAt?: Date | null;
-}) {
+}): boolean {
   if (hospital.subscriptionStatus === "FREE") return true;
   if (hospital.subscriptionStatus === "ACTIVE") return true;
   if (hospital.subscriptionStatus === "TRIAL") {
