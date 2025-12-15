@@ -9,30 +9,22 @@ interface JwtPayload {
 }
 
 /**
- * Auth + Hospital subscription middleware
- * @param req NextRequest
- * @returns userId if valid
- * @throws NextResponse if unauthorized or subscription invalid
+ * Auth + Hospital subscription check
+ * Returns userId if valid, otherwise throws NextResponse error
  */
 export async function authMiddleware(req: NextRequest): Promise<string> {
   try {
-    // 1️⃣ Extract JWT from cookies
     const token = req.cookies.get("auth-token")?.value;
     if (!token) {
       throw NextResponse.json({ error: "Unauthorized: No token" }, { status: 401 });
     }
 
-    // 2️⃣ Verify token
     const decoded = verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
-    // 3️⃣ If hospitalId exists, validate subscription
     if (decoded.hospitalId) {
       const hospital = await prisma.hospital.findUnique({
         where: { id: decoded.hospitalId },
-        select: {
-          subscriptionStatus: true,
-          trialEndsAt: true,
-        },
+        select: { subscriptionStatus: true, trialEndsAt: true },
       });
 
       if (!hospital || !isHospitalSubscriptionValid(hospital)) {
@@ -43,7 +35,6 @@ export async function authMiddleware(req: NextRequest): Promise<string> {
       }
     }
 
-    // 4️⃣ Return userId for valid requests
     return decoded.userId;
   } catch (err: any) {
     console.error("AuthMiddleware failed:", err);
@@ -52,4 +43,20 @@ export async function authMiddleware(req: NextRequest): Promise<string> {
       { status: 401 }
     );
   }
+}
+
+/**
+ * Wrapper helper to protect API routes
+ * Usage:
+ *   export const GET = protectRoute(async (req, userId) => { ... });
+ */
+export function protectRoute(handler: (req: NextRequest, userId: string) => Promise<NextResponse>) {
+  return async (req: NextRequest) => {
+    try {
+      const userId = await authMiddleware(req);
+      return await handler(req, userId);
+    } catch (err: any) {
+      return err; // authMiddleware throws NextResponse
+    }
+  };
 }
